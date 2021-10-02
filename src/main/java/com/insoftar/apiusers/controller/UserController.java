@@ -73,25 +73,25 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CREATED.value())
                     .body(new ResponseDTO().setBody(modelMapper.map(service.createOrUpdate(
                             modelMapper.map(request, User.class)), UserDTO.class)).setMsg(HttpStatus.OK.getReasonPhrase()));
-        } catch (EmailDuplicatedException e) {
-            log.error(Constants.DUPLICATED_EMAIL, e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(
-                    new ResponseDTO().setFieldErrors(Constants.DUPLICATED_EMAIL, "Email")
-                            .setMsg(Constants.VALID_ERROR));
         } catch (DataAccessException ex) {
             log.error("Error: " + ex.getMessage() + " " + ex.getMostSpecificCause().getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO().setFieldErrors(ex.getMessage(), ex.getMostSpecificCause().getMessage())
-                            .setMsg(ex.getMessage()));
+                            .setMsg(Constants.PERSIST_ERROR));
         }
     }
 
     @DeleteMapping("/{idCard}")
     public ResponseEntity<ResponseDTO> delete(@Valid @PathVariable String idCard) {
-        return service.delete(idCard)
-                ? ResponseEntity.status(HttpStatus.OK.value()).body(
-                new ResponseDTO().setMsg(HttpStatus.OK.getReasonPhrase()))
-                : ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(
-                new ResponseDTO().setMsg(Constants.NOT_FOUND));
+        try{
+            service.delete(idCard);
+            return ResponseEntity.status(HttpStatus.OK.value()).body(
+                    new ResponseDTO().setMsg(HttpStatus.OK.getReasonPhrase()));
+        }catch (DataAccessException ex){
+            log.error("Error: " + ex.getMessage() + " " + ex.getMostSpecificCause().getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ResponseDTO().setFieldErrors(ex.getMessage(), ex.getMostSpecificCause().getMessage())
+                            .setMsg(Constants.NOT_FOUND));
+        }
     }
 }

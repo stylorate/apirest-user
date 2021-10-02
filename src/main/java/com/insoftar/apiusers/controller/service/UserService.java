@@ -33,7 +33,7 @@ public class UserService extends BaseService {
         return repository.findByIdCard(id);
     }
 
-    public User createOrUpdate(User user) throws EmailDuplicatedException {
+    public User createOrUpdate(User user) {
         log.info("Llego al service");
         Optional<User> optionalUser = repository.findByIdCard(user.getIdCard());
 
@@ -44,14 +44,8 @@ public class UserService extends BaseService {
         return repository.save(user);
     }
 
-    public boolean delete(String idCard) {
-//        User user = repository.findById(id).orElseThrow(() -> new NotFoundException(Constants.NOT_FOUND));
-        Optional<User> user = repository.findByIdCard(idCard);
-        if (user.isPresent()) {
-            repository.delete(user.get());
-            return true;
-        }
-        return false;
+    public void delete(String idCard) {
+        repository.deleteById(Integer.parseInt(idCard));
     }
 
     public boolean validateRegex(String field, String regex) {
